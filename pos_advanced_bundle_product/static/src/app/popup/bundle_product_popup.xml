@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    
+    <!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+    <!-- See LICENSE file for full copyright and licensing details. -->
+    <!-- License URL : <https://store.webkul.com/license.html/> -->
+
+    <t t-name="pos_advanced_bundle_product.BundleProductPopupWidget">
+        <div class="popup popup-textinput bundle_popup_style bundle_popup_whole" style="max-width:650px;">
+            <div class="modal-header shadow-lg mb-1 bg-body-tertiary rounded">
+                <h3 class="modal-title fw-bolder mx-auto"><t t-esc="props.title" /></h3>
+            </div>
+            <div class="modal-body container_div" style="margin:2px;">
+                <t t-set="count" t-value="1" />
+                    <t t-foreach="props.bundle_product_line" t-as="bundle" t-key="bundle.id">
+                        <t t-set="_id" t-value="1" />
+                        <table class="bundle_popup_table table" style="caption-side:top;">
+                            <tr class="bundle_popup_tr wk_tr">
+                                <t t-if="bundle._type == 'requiredopt'">
+                                    <th class="wk_th table_data_cells">
+                                        <t t-if="props.checked_list and props.checked_list.find(o => o == (''+count+_id))">
+                                            <input type="checkbox" class="requiredopt_input requiredopt_main static_input custom-control-input" id="required_optional" checked="1" name="required_optional_product" />
+                                        </t>
+                                        <t t-if="props.checked_list and !(props.checked_list.find(o => o == (''+count+_id)))">
+                                            <input type="checkbox" class="requiredopt_input requiredopt_main static_input custom-control-input" id="required_optional" name="required_optional_product" />
+                                        </t>
+                                    </th>                 
+                                </t>
+                                <t t-if="bundle._type == 'radio' and bundle.allow_none">
+                                    <th class="wk_th table_data_cells">
+                                        <input class="static_input radio_bundle custom-control-input " type="radio" id="none_radio" t-attf-name="advance_product_checkbox{{count}}" />
+                                    </th>
+                                </t>
+                                <t t-if="bundle._type !== 'requiredopt' or bundle.allow_none ">
+                                    <th class="wk_th table_data_cells"></th>
+                                </t>
+                                <th class="wk_th table_data_cells">Product</th>
+                                <th class="wk_th table_data_cells">Quantity</th>
+                                <th class="wk_th table_data_cells">Price</th>
+                            </tr>     
+                            <t t-if="bundle._type == 'required' and bundle.bundle_line_ids.length>0">
+                                <caption class="fw-bolder pt-0 pb-0">
+                                    <h3 t-esc="bundle.display_name" />
+                                    <p>You have to buy all products from the list</p>
+                                    <i class="bundle_collapse icon_up" />
+                                </caption>
+                                <tbody class="wk_tbody_bundle">
+                                    <t t-foreach="props.bundle_items" t-as="advance_product" t-key="advance_product.id">
+                                        <tr class=" wk_tr add_advance_product required_bundle_all" t-if="bundle.bundle_line_ids.find(o => o === advance_product.id) and advance_product.product_name[1]">
+                                            <td class="wk_td">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="static_input required_bundle custom-control-input" t-attf-id="{{count}}{{_id}}" t-att-product_id ="advance_product.id" name="advance_product_checkbox" checked="1" disabled="1" t-att-value="advance_product.product_name.id" />  
+                                                </div>
+                                            </td>
+                                            <td class="wk_td">
+                                                <t t-esc="advance_product.product_name[1]" />
+                                            </td>
+                                            <td class="wk_td req_qty qty" t-att-data-original-qty="advance_product.bundle_qty">
+                                                <t t-esc="advance_product.bundle_qty" />
+                                            </td>
+                                            <td class="wk_td req_product_price product_price">
+                                                <t t-esc="advance_product.bundle_price" />
+                                            </td>
+                                        </tr>
+                                        <t t-set="_id" t-value="_id+1" />
+                                    </t>
+                                </tbody>
+                            </t>
+                            <t t-if="bundle._type == 'requiredopt' and bundle.bundle_line_ids.length>0">
+                                <caption class="requiredopt_caption">
+                                    <h3 t-esc="bundle.display_name" />
+                                    <div class="custom-control custom-checkbox">
+                                        <label class="reqopt custom-control-label" for="required_optional">
+                                            <p>You can select required(optional) products if the below checkbox is selected you have to buy all products in the list</p>
+                                        </label>
+                                    </div>
+                                    <i class="bundle_collapse icon_up" />
+                                </caption>
+                                <tbody class="wk_tbody_bundle">
+                                    <t t-foreach="props.bundle_items" t-as="advance_product" t-key="advance_product.id">
+                                        <tr class="wk_tr add_advance_product" t-if="bundle.bundle_line_ids.find(o => o === advance_product.id) and advance_product.product_name[1]">
+                                            <td class="wk_td">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="static_input requiredopt_bundle custom-control-input" t-att-product_id ="advance_product.id" t-attf-id="{{count}}{{_id}}" name="advance_product_checkbox" disabled="1" t-att-value="advance_product.product_name.id" />
+                                                </div>
+                                            </td>
+                                            <td class="wk_td">
+                                                <t t-esc="advance_product.product_name[1]" />
+                                            </td>
+                                            <td class="wk_td qty" t-att-data-original-qty="advance_product.bundle_qty">
+                                                <t t-esc="advance_product.bundle_qty" />
+                                            </td>
+                                            <td class="wk_td product_price">
+                                                <t t-esc="advance_product.bundle_price" />
+                                            </td>
+                                        </tr>
+                                        <t t-set="_id" t-value="_id+1" />
+                                    </t>
+                                </tbody>
+                            </t>
+                            <t t-if="bundle._type == 'optional' and bundle.bundle_line_ids.length>0">
+                                <caption class="fw-bolder pt-0 pb-0">
+                                    <h3 t-esc="bundle.display_name" />
+                                    <p>You can select optional products from the list</p>
+                                    <i class="bundle_collapse icon_up" />
+                                </caption>
+                                <tbody class="wk_tbody_bundle">
+                                    <t t-foreach="props.bundle_items" t-as="advance_product" t-key="advance_product.id">
+                                        <tr class="wk_tr add_advance_product" t-if="bundle.bundle_line_ids.find(o => o === advance_product.id) and advance_product.product_name[1]">
+                                            <td class="wk_td">
+                                                <div class="custom-control  custom-checkbox">
+                                                    <t t-if="props.checked_list and props.checked_list.find(o => o == (''+count+_id))">
+                                                        <input type="checkbox" class="static_input optional_bundle custom-control-input" t-att-product_id ="advance_product.id" t-attf-id="{{count}}{{_id}}" checked="1" name="advance_product_checkbox" t-att-value="advance_product.product_name.id" />
+                                                    </t>
+                                                    <t t-if="props.checked_list and !(props.checked_list.find(o => o ==(''+count+_id)))">
+                                                        <input type="checkbox" class="static_input optional_bundle custom-control-input" t-att-product_id ="advance_product.id" t-attf-id="{{count}}{{_id}}" name="advance_product_checkbox" t-att-value="advance_product.product_name.id" />
+                                                    </t>
+                                                </div>
+                                            </td>
+                                            <td class="wk_td">
+                                                <t t-esc="advance_product.product_name[1]" />
+                                            </td>
+                                            <td class="wk_td qty" t-att-data-original-qty="advance_product.bundle_qty">
+                                                <t t-esc="advance_product.bundle_qty" />
+                                            </td>
+                                            <td class="wk_td product_price">
+                                                <t t-esc="advance_product.bundle_price" />
+                                            </td>
+                                        </tr>
+                                        <t t-set="_id" t-value="_id+1" />
+                                    </t>
+                                </tbody>
+                            </t>
+                            <t t-if="bundle._type == 'radio' and bundle.bundle_line_ids.length>0">
+                                <caption class="fw-bolder pt-0 pb-0">
+                                    <h3 t-esc="bundle.display_name" />
+                                    <p>You can select only one product from the list.
+                                    <t t-if="bundle.allow_none">
+                                    Select the extra option, to choose none of the below.
+                                    </t>
+                                    </p>
+                                    <i class="bundle_collapse icon_up" />
+                                </caption>
+                                <tbody class="wk_tbody_bundle">
+                                    <t t-foreach="props.bundle_items" t-as="advance_product" t-key=
+                                    'advance_product.id'>
+                                        <tr class="wk_tr add_advance_product" t-if="bundle.bundle_line_ids.find(o => o === advance_product.id) and advance_product.product_name[1]">
+                                            <td class="wk_td">
+                                                <div class="custom-control custom-radio">   
+                                                    <t t-if="props.checked_list and (props.checked_list.find(o => o ==(''+count+_id)))">
+                                                        <input type="radio" class="static_input radio_bundle custom-control-input" t-att-product_id ="advance_product.id"   t-attf-id="{{count}}{{_id}}" t-attf-name="advance_product_checkbox{{count}}"  checked="1" t-att-value="advance_product.product_name.id"  />
+                                                    </t>
+                                                    <t t-if="props.checked_list and !(props.checked_list.find(o => o ==(''+count+_id))) ">
+                                                        <input type="radio" class="static_input radio_bundle custom-control-input" t-att-product_id ="advance_product.id" t-attf-id="{{count}}{{_id}}" checked="1" t-attf-name="advance_product_checkbox{{count}}" t-att-value="advance_product.product_name.id"  />
+                                                    </t>
+                                                </div>
+                                            </td>
+                                            <td class="wk_td">
+                                                <t t-esc="advance_product.product_name[1]" />
+                                            </td>
+                                            <td class="wk_td qty" t-att-data-original-qty="advance_product.bundle_qty">
+                                                <t t-esc="advance_product.bundle_qty" />
+                                            </td>
+                                            <td class="wk_td product_price">
+                                                <t t-esc="advance_product.bundle_price" />
+                                            </td>                                       
+                                        </tr>
+                                        <t t-set="_id" t-value="_id+1" />
+                                    </t>
+                                </tbody>
+                            </t>
+                            <t t-if="(bundle._type == 'addon' or bundle._type == 'accessories') and bundle.bundle_line_ids.length>0">
+                                <caption class="fw-bolder pt-0 pb-0">
+                                    <h3 t-esc="bundle.display_name" />
+                                    <p t-if="bundle._type == 'addon'">You can buy these products with the bundled products as well</p>
+                                    <p t-if="bundle._type == 'accessories'">These are the accessories for the listed products</p>
+                                    <i class="bundle_collapse icon_up" />
+                                </caption>
+                                <tbody class="wk_tbody_bundle">
+                                    <t t-foreach="props.bundle_items" t-as="advance_product" t-key="advance_product.id">
+                                        <tr class="wk_tr add_advance_product" t-if="bundle.bundle_line_ids.find(o => o === advance_product.id) and advance_product.product_name[1]">
+                                            <td class="wk_td">
+                                                <div class="custom-control custom-checkbox">
+                                                    <t t-if="props.checked_list and (props.checked_list.find(o => o ==(''+count+_id)))">
+                                                        <input type="checkbox" class="static_input addon_bundle dynamic_field custom-control-input" checked="1" t-attf-id="{{count}}{{_id}}" t-att-product_id ="advance_product.id" name="advance_product_checkbox" t-att-value="advance_product.product_name.id" />
+                                                    </t>
+                                                    <t t-if="props.checked_list and !(props.checked_list.find(o => o ==(''+count+_id)))">
+                                                        <input type="checkbox" class="static_input addon_bundle dynamic_field custom-control-input" t-attf-id="{{count}}{{_id}}" t-att-product_id ="advance_product.id" name="advance_product_checkbox" t-att-value="advance_product.product_name.id" />
+                                                    </t>                                                   
+                                                </div>
+                                            </td>
+                                            <td class="wk_td">
+                                                <t t-esc="advance_product.product_name[1]" />
+                                            </td>                                          
+                                            <td class="wk_td qty">
+                                                <div class="input-group">
+                                                    <t t-if="props.bundle_quantity_dict and !((''+count+_id) in props.bundle_quantity_dict)">
+                                                        <t t-if="bundle.pre_qty">
+                                                            <input type="text" class="number text-center form-control diff addon_quantity" t-att-product_id ="advance_product.id" data-min="1" name="add_qty"  t-att-value="advance_product.bundle_qty or 1" readonly="True" t-att-data-original-qty="advance_product.bundle_qty" />
+                                                        </t>
+                                                        <t t-else="">
+                                                            <input type="number" class="number text-center form-control addon_quantity quantity" min="1" name="add_qty" t-att-product_id ="advance_product.id" t-att-value="advance_product.bundle_qty or 1" t-att-data-original-qty="advance_product.bundle_qty" />
+                                                        </t>
+                                                    </t>
+                                                    <t t-if="props.bundle_quantity_dict and ((''+count+_id) in props.bundle_quantity_dict)">
+                                                        <t t-if="bundle.pre_qty">
+                                                            <input type="text" class="number text-center form-control diff addon_quantity" data-min="1" name="add_qty" 
+                                                            t-att-product_id ="advance_product.id"
+                                                            t-att-value="advance_product.bundle_qty or 1" readonly="True" t-att-data-original-qty="advance_product.bundle_qty" />
+                                                        </t>
+                                                        <t t-else="">
+                                                            <input type="number" class="number text-center form-control addon_quantity quantity" min="1" name="add_qty" t-att-product_id ="advance_product.id"
+                                                            t-att-value="props.bundle_quantity_dict[''+count+_id]" t-att-data-original-qty="advance_product.bundle_qty" />
+                                                        </t>
+                                                    </t>
+                                                </div>
+                                            </td>
+                                            <td class="wk_td product_price">
+                                                <t t-esc="advance_product.bundle_price" />
+                                            </td>
+                                        </tr>
+                                        <t t-set="_id" t-value="_id+1" />
+                                    </t>
+                                </tbody>
+                            </t>
+                        </table>
+                    <t t-set="count" t-value="count+1" />
+                </t>
+            </div>
+            <footer class="footer modal-footer">
+                <div class="button btn btn-primary" t-on-click="apply_bundle" id="apply_button"> 
+                    Apply 
+                </div>
+                <div class="button btn btn-secondary" t-on-click="click_cancel">
+                    Cancel
+                </div>
+            </footer>
+        </div>
+    </t>
+</templates>
