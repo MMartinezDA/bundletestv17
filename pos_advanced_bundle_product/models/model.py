@@ -61,7 +61,7 @@ class StockPicking(models.Model):
 
                             confirmed_moves = current_move._action_confirm()
                             for move in confirmed_moves:
-                                move.quantity_done = move.product_uom_qty
+                                move.product_uom_qty = move.product_uom_qty
                         else:
                             val = abs(sum(r.mapped('qty')))
                             current_move = self.env['stock.move'].create(
@@ -80,7 +80,7 @@ class StockPicking(models.Model):
                                 )
                             confirmed_moves = current_move._action_confirm()
                             for move in confirmed_moves:
-                                move.quantity_done = move.product_uom_qty
+                                move.product_uom_qty = move.product_uom_qty
             current_move = self.env['stock.move'].create(
                 self._prepare_stock_move_vals(first_line, order_lines)
             )
@@ -135,14 +135,14 @@ class StockPicking(models.Model):
                             for move_line in move.move_line_ids:
                                 move_line.qty_done = move_line.product_uom_qty
                                 sum_of_lots += move_line.product_uom_qty
-                            if float_compare(move.product_uom_qty, move.quantity_done, precision_rounding=move.product_uom.rounding) > 0:
-                                remaining_qty = move.product_uom_qty - move.quantity_done
+                            if float_compare(move.product_uom_qty, move.product_uom_qty, precision_rounding=move.product_uom.rounding) > 0:
+                                remaining_qty = move.product_uom_qty - move.product_uom_qty
                                 ml_vals = move._prepare_move_line_vals()
                                 ml_vals.update({'qty_done':remaining_qty})
                                 self.env['stock.move.line'].create(ml_vals)
 
                     else:
-                        move.quantity_done = move.product_uom_qty
+                        move.product_uom_qty = move.product_uom_qty
 
 class PosOrderLine(models.Model):
     _inherit = "pos.order.line" 

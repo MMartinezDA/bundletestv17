@@ -17,7 +17,7 @@
 {
     "name"          :"POS Advanced Bundle Product",
     "summary"       :"""Customize products as a bundle with different options in POS.POS Advanced Bundle Product|Bundle Product POS|POS Advanced Bundle""",
-    "version"       :"1.0.0",
+    "version"       :"1.0.1",
     "author"        :"Webkul Software Pvt. Ltd.",
     "license"       :"Other proprietary",
     "website"       :"http://www.webkul.com",
