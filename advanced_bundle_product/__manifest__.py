@@ -4,7 +4,7 @@
     "name":  "Odoo Website Advanced Bundle Product",
     "summary":  """The customized shop page for selling product as a bundle with different options""",
     "category":  "Ecommerce",
-    "version":  "17.0.0",
+    "version":  "17.0.0.0",
     "author":  "Datanalisis Consultores S.L.",
     "license":  "Other proprietary",
     "website":  "https://www.datanalisis.es",
