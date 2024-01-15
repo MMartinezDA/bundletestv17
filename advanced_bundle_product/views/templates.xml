@@ -1,0 +1,459 @@
+<odoo>
+    <data>
+        <template id="products_item_inherited" inherit_id="website_sale.products_item">
+            <xpath expr="//form//div[hasclass('product_price')]//span[@t-field='website.prevent_zero_price_sale_text']" position="after">
+                <span t-if="product.is_advance_bundle">Onwards</span>
+            </xpath>
+
+            <xpath expr="//form//div[hasclass('product_price')]//span[contains(@t-if,'website.prevent_zero_price_sale')]" position="replace">
+                <t t-if="product.is_advance_bundle">
+                    <t t-set="bundle_required_items_price" t-value="product._get_bundle_items_price()"/>
+                        <span class="h6 mb-0" t-if="not website.prevent_zero_price_sale" t-esc="bundle_required_items_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                </t>
+                <span class="h6 mb-0" t-elif="not product.is_advance_bundle and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)" t-esc="template_price_vals['price_reduce']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+            </xpath>
+
+        </template>
+
+        <template id="product_quantity">
+            <div id="advance_bundle_quantity" class="css_quantity input-group oe_website_spinner mt-2" contenteditable="false">
+                <input type="text" class="form-control quantity text-center" data-min="1" name="add_qty" t-att-value="add_qty or 1" />
+                <div>
+                    <div class="plus">
+                        <a t-attf-href="#" class="js_add_cart_json" aria-label="Add one" title="Add one">
+                            <i class="fa fa-plus" />
+                        </a>
+                    </div>
+                    <div class="minus">
+                        <a t-attf-href="#" class="js_add_cart_json" aria-label="Remove one" title="Remove one">
+                            <i class="fa fa-minus" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="sale_order_portal_content" inherit_id="sale.sale_order_portal_content">
+            <xpath expr="//table[@id='sales_order_table']//td[@id='product_name']" position="inside">
+                <div t-if="line.product_id.is_advance_bundle" class="toggle_bundle_sale" data-bs-toggle="collapse" t-attf-data-bs-target="#bundle_order_lines{{line.id}}">
+                    <span>
+                        <t t-esc="len(line.advance_bundle_order_lines)" />
+                        Units inside
+                        <i class="fa fa-chevron-circle-down" />
+                    </span>
+                </div>
+                <div t-if="line.product_id.is_advance_bundle" t-attf-id="bundle_order_lines{{line.id}}" class="advanced_bundle container collapse navbar-collapse">
+                    <t t-foreach="line.advance_bundle_order_lines" t-as="advanced_line">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a t-attf-href="/shop/product/#{ slug(advanced_line.product_id.product_tmpl_id) }">
+                                    <t t-esc="advanced_line.product_id.name" />
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <t t-esc="advanced_line.product_uom_qty" />
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </xpath>
+        </template>
+
+        <template id="advance_bundle_inherit_product" inherit_id="website_sale.product">
+            <xpath expr="//section[@id='product_detail']" position="after">
+                <t t-set="first_possible_combination" t-value="product._get_first_possible_combination()" />
+
+                <section t-if="product.is_advance_bundle" id="advanced_bundle" class="mt-4 container py-2 oe_website_sale">
+                    <div class="row" id="product_detail_main">
+                        <div class="col-md-5">
+                            <t t-call="website_sale.shop_product_images" />
+                            <!-- <t t-call="website_sale.shop_product_carousel" /> -->
+                        </div>
+                        <div id="bundle_details" class="col-md-7">
+                            <div>
+                                <h3 t-field="product.name"></h3>
+                                <p t-field="product.description_sale"></p>
+                            </div>
+                            <form t-if="product._is_add_to_cart_possible()" action="/shop/cart/update" method="POST">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()" />
+                                <div class="js_product js_main_product">
+                                    <t t-placeholder="select">
+                                        <input type="hidden" class="product_id" name="product_id" t-att-value="product_variant.id" />
+                                        <input type="hidden" class="product_template_id" name="product_template_id" t-att-value="product.id" />
+                                        <t t-if="first_possible_combination" t-call="sale.variants">
+                                            <t t-set="ul_class" t-value="'flex-column'" />
+                                            <t t-set="parent_combination" t-value="None" />
+                                        </t>
+                                        <t t-else="">
+                                            <ul class="d-none js_add_cart_variants" t-att-data-attribute_exclusions="{'exclusions: []'}" />
+                                        </t>
+                                    </t>
+                                    <div id="o_wsale_cta_wrapper" class="wk_advanced_bundle">
+                                        <h4 class="oe_price_h4 css_editable_mode_hidden">
+                                            <b style="white-space: nowrap;" t-esc="0.00" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" />
+                                            <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name" />
+                                        </h4>
+                                    </div>
+                                    <t t-call="advanced_bundle_product.product_quantity" />
+                                    <p t-if="True" class="css_not_available_msg alert alert-warning">This combination does not exist.</p>
+                                    <hr />
+                                    <a role="button" id="advanced_add_to_cart" class="btn btn-primary mt8" href="#">Add to Cart</a>
+                                    <div class="alert_msg mt-2"></div>
+                                </div>
+                                <div class="modal fade" id="advance_bundle_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">Warning...</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Bundle Product quantity should be positive.
+                                            </div>
+                                        
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <section t-if="product.is_advance_bundle" id="advacned_bundle_details" class="container mt-5">
+                    <t t-set="website_currency" t-value="request.website.pricelist_id.currency_id" />
+                    <t t-set="partner_currency" t-value="request.env.user.company_id.currency_id" />
+                    <t t-set="count" t-value="1" />
+                    <div class='bundle'>
+                        <div class='bundle_details'>
+                        <t t-foreach="product.sudo().advance_bundle_line_ids" t-as="bundle">
+                            <t t-set="_id" t-value="1" />
+                            <table class="table wk_advanced_table">
+                                <thead>
+                                    <th colspan="3">PRODUCT</th>
+                                    <th>QTY</th>
+                                    <th>SKU</th>
+                                    <th>DESCRIPTION</th>
+                                    <th>TOTAL</th>
+                                </thead>
+                                <t t-if="bundle._type == 'required' and len(bundle.bundle_line_ids)>0">
+                                    <caption>
+                                        <h6 t-field="bundle.name" />
+                                        <p>You have to buy all products from the list</p>
+                                        <i class="bundle_collapse icon_up" />
+                                    </caption>
+                                    <tbody>
+                                        <t t-foreach="bundle.bundle_line_ids" t-as="advance_product">
+                                            <tr class="add_advance_product" t-if="advance_product.product_name.is_published">
+                                                <td>
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="static_input custom-control-input" t-attf-id="custom_checkbox{{count}}{{_id}}" name="advance_product_checkbox" checked="1" disabled="1" t-att-value="advance_product.product_name.id" />
+                                                        
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <label class="custom-control-label" t-attf-for="custom_checkbox{{count}}{{_id}}">
+                                                            <span t-field="advance_product.product_name.image_1024" t-options="{'widget':'image','class':'bundle_image_items'}" />
+                                                        </label>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.name" />
+                                                </td>
+                                                <td class="qty" t-att-data-original-qty="advance_product.bundle_qty">
+                                                    <t t-esc="advance_product.bundle_qty" />
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.default_code" />
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.description_sale" />
+                                                </td>
+                                                <td class="advanced_product_price">
+                                                    <t t-set="price" t-value="partner_currency._convert(advance_product.bundle_price,website_currency,request.env.user.company_id,datetime.datetime.today())" />
+                                                    <span class="wk_adv_price" t-attf-data-original-price="{{price}}" t-esc="price" t-options="{'widget': 'monetary', 'display_currency': request.website.currency_id}" />
+                                                </td>
+                                            </tr>
+                                            <t t-set="_id" t-value="_id+1" />
+                                        </t>
+                                    </tbody>
+                                </t>
+                                <t t-if="bundle._type == 'requiredopt' and len(bundle.bundle_line_ids)>0">
+                                    <caption>
+                                        <h6 t-field="bundle.name" />
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="required_input custom-control-input" id="required_optional" name="required_optional_product" />
+                                            <label class="reqopt custom-control-label" for="required_optional">
+                                                <p>You can select required(optional) products if selected you have to buy all products in the list</p>
+                                            </label>
+                                        </div>
+                                        <i class="bundle_collapse icon_up" />
+                                    </caption>
+                                    <tbody>
+                                        <t t-foreach="bundle.bundle_line_ids" t-as="advance_product">
+                                            <tr class="add_advance_product" t-if="advance_product.product_name.is_published">
+                                                <td>
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="static_input custom-control-input" t-attf-id="custom_checkbox{{count}}{{_id}}" name="advance_product_checkbox" disabled="1" t-att-value="advance_product.product_name.id" />
+                                                        
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <label class="custom-control-label" t-attf-for="custom_checkbox{{count}}{{_id}}">
+                                                            <span t-field="advance_product.product_name.image_1024" t-options="{'widget':'image','class':'bundle_image_items'}" />
+                                                        </label>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.name" />
+                                                </td>
+                                                <td class="qty" t-att-data-original-qty="advance_product.bundle_qty">
+                                                    <t t-esc="advance_product.bundle_qty" />
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.default_code" />
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.description_sale" />
+                                                </td>
+                                                <td class="advanced_product_price requiredoptional">
+                                                    <t t-set="price" t-value="partner_currency._convert(advance_product.bundle_price,website_currency,request.env.user.company_id,datetime.datetime.today())" />
+                                                    <span class="wk_adv_price" t-attf-data-original-price="{{price}}" t-esc="price" t-options="{'widget': 'monetary', 'display_currency': request.website.currency_id}" />
+                                                </td>
+                                            </tr>
+                                            <t t-set="_id" t-value="_id+1" />
+                                        </t>
+                                    </tbody>
+                                </t>
+                                <t t-if="bundle._type == 'optional' and len(bundle.bundle_line_ids)>0">
+                                    <caption>
+                                        <h6 t-field="bundle.name" />
+                                        <p>You can select optional products from the list</p>
+                                        <i class="bundle_collapse icon_up" />
+                                    </caption>
+                                    <tbody>
+                                        <t t-foreach="bundle.bundle_line_ids" t-as="advance_product">
+                                            <tr class="add_advance_product" t-if="advance_product.product_name.is_published">
+                                                <td>
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="static_input custom-control-input" t-attf-id="custom_checkbox{{count}}{{_id}}" name="advance_product_checkbox" t-att-value="advance_product.product_name.id" />
+                                                       
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                     <label class="custom-control-label" t-attf-for="custom_checkbox{{count}}{{_id}}">
+                                                            <span t-field="advance_product.product_name.image_1024" t-options="{'widget':'image','class':'bundle_image_items'}" />
+                                                        </label>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.name" />
+                                                </td>
+                                                <td class="qty" t-att-data-original-qty="advance_product.bundle_qty">
+                                                    <t t-esc="advance_product.bundle_qty" />
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.default_code" />
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.description_sale" />
+                                                </td>
+                                                <td class="advanced_product_price">
+                                                    <t t-set="price" t-value="partner_currency._convert(advance_product.bundle_price,website_currency,request.env.user.company_id,datetime.datetime.today())" />
+                                                    <span class="wk_adv_price" t-attf-data-original-price="{{price}}" t-esc="price" t-options="{'widget': 'monetary', 'display_currency': request.website.currency_id}" />
+                                                </td>
+                                            </tr>
+                                            <t t-set="_id" t-value="_id+1" />
+                                        </t>
+                                    </tbody>
+                                </t>
+                                <t t-if="bundle._type == 'radio' and len(bundle.bundle_line_ids)>0">
+                                    <caption>
+                                        <h6 t-field="bundle.name" />
+                                        <p>You can select only one product from the list</p>
+                                        <i class="bundle_collapse icon_up" />
+                                    </caption>
+                                    <tbody>
+                                        <t t-foreach="bundle.bundle_line_ids" t-as="advance_product">
+                                            <tr class="add_advance_product" t-if="advance_product.product_name.is_published">
+                                                <td>
+                                                    <div class="custom-control custom-radio">
+                                                        <input type="radio" class="static_input custom-control-input" t-attf-id="custom_checkbox{{count}}{{_id}}" t-attf-name="advance_product_checkbox{{count}}" t-att-value="advance_product.product_name.id" checked="1" />
+                                                        
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <label class="custom-control-label" t-attf-for="custom_checkbox{{count}}{{_id}}">
+                                                            <span t-field="advance_product.product_name.image_1024" t-options="{'widget':'image','class':'bundle_image_items'}" />
+                                                        </label>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.name" />
+                                                </td>
+                                                <td class="qty" t-att-data-original-qty="advance_product.bundle_qty">
+                                                    <t t-esc="advance_product.bundle_qty" />
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.default_code" />
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.description_sale" />
+                                                </td>
+                                                <td class="advanced_product_price">
+                                                    <t t-set="price" t-value="partner_currency._convert(advance_product.bundle_price,website_currency,request.env.user.company_id,datetime.datetime.today())" />
+                                                    <span class="wk_adv_price" t-attf-data-original-price="{{price}}" t-esc="price" t-options="{'widget': 'monetary', 'display_currency': request.website.currency_id}" />
+                                                </td>
+                                            </tr>
+                                            <t t-set="_id" t-value="_id+1" />
+                                        </t>
+                                        <t t-if="bundle.allow_none">
+                                            <tr>
+                                                <td colspan="4">
+                                                    <div class="custom-control custom-radio">
+                                                        <input class="static_input custom-control-input" type="radio" id="none_radio" t-attf-name="advance_product_checkbox{{count}}" />
+                                                        
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <label class="custom-control-label" for="none_radio">
+                                                            <p>None of the above </p>
+                                                        </label>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </t>
+                                <t t-if="(bundle._type == 'addon' or bundle._type == 'accessories') and len(bundle.bundle_line_ids)>0">
+                                    <caption>
+                                        <h6 t-field="bundle.name" />
+                                        <p t-if="bundle._type == 'addon'">You can buy these products with the bundled products as well</p>
+                                        <p t-if="bundle._type == 'accessories'">These are the accessories for the listed products</p>
+                                        <i class="bundle_collapse icon_up" />
+                                    </caption>
+                                    <tbody>
+                                        <t t-foreach="bundle.bundle_line_ids" t-as="advance_product">
+                                            <tr class="add_advance_product" t-if="advance_product.product_name.is_published">
+                                                <td>
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="static_input dynamic_field custom-control-input" t-attf-id="custom_checkbox{{count}}{{_id}}" name="advance_product_checkbox" t-att-value="advance_product.product_name.id" />
+                                                        
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <label class="custom-control-label" t-attf-for="custom_checkbox{{count}}{{_id}}">
+                                                            <span t-field="advance_product.product_name.image_1024" t-options="{'widget':'image','class':'bundle_image_items'}" />
+                                                        </label>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.name" />
+                                                </td>
+                                                <t t-set="price" t-value="partner_currency._convert(advance_product.bundle_price,website_currency,request.env.user.company_id,datetime.datetime.today())" />
+                                                <td class="qty">
+                                                    <div class="input-group">
+                                                        <t t-if="bundle.pre_qty">
+                                                            <input type="text" class="number text-center form-control quantity" data-min="1" name="add_qty" t-att-value="advance_product.bundle_qty or 1" readonly="True" t-att-data-original-qty="advance_product.bundle_qty" />
+                                                        </t>
+                                                        <t t-else="">
+                                                            <input type="number" class="number text-center form-control quantity" min="1" name="add_qty" t-att-value="advance_product.bundle_qty or 1" t-att-data-original-qty="advance_product.bundle_qty" />
+                                                        </t>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.default_code" />
+                                                </td>
+                                                <td>
+                                                    <t t-esc="advance_product.product_name.description_sale" />
+                                                </td>
+                                                <td class="advanced_product_price dynamic_input">
+                                                    <span class="wk_adv_price" t-attf-data-original-price="{{price}}" t-esc="price" t-options="{'widget': 'monetary', 'display_currency': request.website.currency_id}" />
+                                                </td>
+                                            </tr>
+                                            <t t-set="_id" t-value="_id+1" />
+                                        </t>
+                                    </tbody>
+                                </t>
+                            </table>
+                            <t t-set="count" t-value="count+1" />
+                        </t>
+                        </div>
+                    </div>
+                    <button t-if="product.is_advance_bundle" id="advanced_add_to_cart" class="btn btn-primary mt8">Add to Cart</button>
+                    <div class="alert_msg mt-2"></div>
+                </section>
+            </xpath>
+
+            <xpath expr="//section[@id='product_detail']" position="attributes">
+                <attribute name="t-if">not product.is_advance_bundle</attribute>
+            </xpath>
+        </template>
+
+        <template id="advanced_bundle_template">
+            <div id="advance_bundle" class="container">
+                <div class="col-md-4" t-if="product.is_advance_bundle" t-field="product.image_1024" t-options="{'widget': 'image', 'class': 'product_detail_img', 'alt-field': 'name', 'zoom': 'image' }" />
+            </div>
+        </template>
+
+        <template id="cart_lines" inherit_id="website_sale.cart_lines">
+            <xpath expr="//div[@id='cart_products']" position="attributes">
+                <attribute name="class" separator=" " add="p-2"></attribute>
+            </xpath>
+            <xpath expr="//div[@id='cart_products']//div[1]" position="attributes">
+                <attribute name="t-attf-class">row o_cart_product d-flex align-items-stretch #{line.linked_line_id and 'optional_product info'} #{not line_last and 'border-bottom pb-2'} #{line_index &gt; 0 and 'pt-4'}</attribute>
+            </xpath>
+            <xpath expr="//div[@id='cart_products']//div[1]//div[1]" position="attributes">
+                <attribute name="class" separator=" " add="col-2"></attribute>
+            </xpath>
+            <xpath expr="//div[@id='cart_products']//div[1]//div[2]" position="attributes">
+                <attribute name="class" separator=" " add="col-7" remove="flex-grow-1"></attribute>
+            </xpath>
+            <xpath expr="//div[@id='cart_products']//div[1]//div[3]" position="attributes">
+                <attribute name="class" separator=" " add="col-3" remove="gap-3"></attribute>
+            </xpath>                                    
+            <xpath expr="//div[@id='cart_products']//div[1]" position="inside">
+                <div t-if="line.product_id.is_advance_bundle" class='px-2'>
+                    <table class="table advanced_table">
+                        <thead>
+                            <th colspan="2">
+                                Product Info
+                            </th>
+                            <th>
+                                Quantity
+                            </th>
+                            <th>
+                                Price
+                            </th>
+                        </thead>
+                        <caption class="toggle_bundle px-2" style="caption-side:top;">
+                            <span>
+                                <t t-esc="len(line.advance_bundle_order_lines)" />
+                                Units inside
+                                <i class="fa fa-angle-down" />
+                            </span>
+                        </caption>
+                        <tbody>
+                            <t t-foreach="line.advance_bundle_order_lines" t-as="bundle_product">
+                                <tr>
+                                    <td>
+                                        <span t-field="bundle_product.product_id.image_1024" t-options="{'widget':'image','class':'bundle_image_items'}" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="bundle_product.product_id.display_name" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="bundle_product.original_qty" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="round(bundle_product.price_unit,2)" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}" />
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </xpath>
+        </template>
+
+        <!-- <template id="advance_bundle_inherit_cart" inherit_id="website_sale.cart">
+            <xpath expr="//div[hasclass('oe_cart')]" position="attributes">
+                <attribute name="style" add="overflow:auto !important" sep=";"></attribute>
+            </xpath>
+        </template> -->
+    </data>
+</odoo>

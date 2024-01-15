@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="advance_bundle_wizard" model="ir.ui.view">
+			<field name="name">Advance Bundle Wizard Form</field>
+			<field name="model">advance.bundle.product.wizard</field>
+			<field name="arch" type="xml">
+				<form string="" version="7.0">
+					<group col="4">
+						<field name="advance_product_id" options="{'no_create': True}" domain="[('is_advance_bundle', '=', True)]" />
+						<field name="advance_bundle_qty" />
+					</group>
+					<field name="description" />
+					<div class="d-flex"><div><h4>Advanced Product Items</h4></div><div invisible="advanced_product_items != []" style="color:red;margin-left:4px">- Please select atleast one product from bundle</div></div>
+					<field name="advanced_product_items" options="{'no_create_edit': True}"/>
+					<footer>
+						<button name="add_advance_bundle_button" string="Add Bundle" invisible="not advanced_product_items" type="object" class="oe_highlight" />
+						<button string="Cancel" class="oe_link" special="cancel" />
+					</footer>
+				</form>
+
+			</field>
+		</record>
+
+		<record id="advance_bundle_product_wizard_action" model="ir.actions.act_window">
+			<field name="name">Advance Bundle</field>
+			<field name="res_model">advance.bundle.product.wizard</field>
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="advance_bundle_wizard" />
+			<field name="target">new</field>
+		</record>
+	</data>
+</odoo>
