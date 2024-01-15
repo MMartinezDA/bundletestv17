@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>;) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<odoo>
+    <data>
+        <record id="advance_bundle_lines_form" model="ir.ui.view">
+            <field name="name">Advanced Bundle Product Lines Form</field>
+            <field name="model">advance.bundle.lines</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Add Bundle Section">
+                    <group col="4">
+                        <field name="name" />
+                        <field name="_type" />
+                        <field name='allow_none' invisible="_type != 'radio'" />
+                        <field name='pre_qty' invisible="_type != 'addon'" />
+                    </group>
+                    <group string="Bundle Section Products"></group>
+                    <field name="bundle_line_ids">
+                        <tree editable="bottom" string="Bundle Section Products">
+                            <field name="product_name" />
+                            <field name="bundle_qty" />
+                            <field name="bundle_price" widget='monetary' options="{'currency_field': 'currency_id', 'field_digits': True}"/>
+                            <field name="currency_id" invisible="1"/>
+                        </tree>
+                    </field>
+                </form>
+            </field>
+        </record>
+
+        <record id="advance_bundle_product_items" model="ir.ui.view">
+            <field name="name">Advanced Bundle Product Items</field>
+            <field name="model">advance.bundle.product.items</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product_name" />
+                    <field name="bundle_qty" />
+                    <field name="bundle_price" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="advance_bundle_product_lines" model="ir.ui.view">
+            <field name="name">Advanced Bundle Product Lines</field>
+            <field name="model">advance.bundle.lines</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="sequence" widget="handle"/>
+                    <field name="name" />
+                    <field name="_type" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="advance_bundle_product_items_action" model="ir.actions.act_window">
+            <field name="name">Advanced Bundle Product Items</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">advance.bundle.product.items</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="advance_bundle_product_items" />
+        </record>
+
+        <record id="advance_bundle_product_lines_action" model="ir.actions.act_window">
+            <field name="name">Advance Bundle Product Lines</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">advance.bundle.lines</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="advance_bundle_product_lines" />
+        </record>
+
+        <menuitem id="advance_bundle_product_root" name="Advanced Product Bundle" parent="website_sale.menu_catalog" action="advanced_bundle_product.advance_bundle_action" />
+        <!-- <menuitem id="bundle_products" name="Bundled Products" parent="advance_bundle_product_root" /> -->
+
+        <record id="sequence_self_service" model="ir.sequence">
+            <field name="name">Bundle Sequence</field>
+            <field name="code">self.sequence</field>
+            <field name="active">TRUE</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+    </data>
+</odoo>
