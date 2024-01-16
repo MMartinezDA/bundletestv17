@@ -3,7 +3,7 @@
 {
     "name"          :"POS Advanced Bundle Product",
     "summary"       :"""Customize products as a bundle with different options in POS.POS Advanced Bundle Product|Bundle Product POS|POS Advanced Bundle""",
-    "version"       :"17.0.0",
+    "version"       :"17.0.0.0",
     "author"        :"Datanalisis Consultores S.L.",
     "license"       :"Other proprietary",
     "website"       :"https://www.datanalisis.es/",
